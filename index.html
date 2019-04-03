@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <title>バーコードでブクログ検索</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+    <div class="barcode-area">
+        <video autoplay></video>
+        <div class="barcode">
+            <div class="barcode-header">
+                バーコードを画面の読み取り範囲内に写すとスキャンします
+            </div>
+            <div class="barcode-mark"></div>
+        </div>
+    </div>
+    <!-- <ul id="results"></ul> -->
+    <script src="cameraScan.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            CameraScan.setCallback(callback);
+            CameraScan.startScan();
+        });
+        // const list = document.querySelector('ul#results');
+        function callback(results) {
+            CameraScan.stopScan();
+            for (let d of results) {
+                if (/^978/.test(d[2])) {
+                    // window.alert("ISBN:" + d[2]);
+                    window.location.href = "http://booklog.jp/blet?s=" + d[2];
+                }
+                // const entry = document.createElement('li');
+                // entry.appendChild(document.createTextNode(d.join(",")));//d[2] + ' (' + d[0] + ')'));
+                // list.appendChild(entry);
+            }
+            CameraScan.restartScan();
+        }
+
+    </script>
+</body>
+
+</html>
