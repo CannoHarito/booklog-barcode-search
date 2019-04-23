@@ -7,62 +7,7 @@
 	box-sizing: border-box;
 }
 
-html, body {
-	height: 100%;
-}
-
-body {
-	background-color: #fff;
-	font-family: sans-serif;
-	color: #444;
-    text-align: center;
-    font-size: 14px;
-}
-
-.barcode-area{
-	position: relative;
-	width: 100%;
-	height: 100%;
-}
-.barcode-area video{
-	position: fixed;
-	left: 0;
-	top: 0;
-	width: auto;
-	height: auto;
-	min-width: 100%;
-	min-height: 100%;
-	overflow: hidden;
-}
-.barcode{
-	position: fixed;
-	width: 100%;
-	height: 100%;
-	background-color: rgba(0, 0, 0, 0.2);
-}
-.barcode-header{
-	position: fixed;
-	top: 0;
-	left: 0;
-	width: 100%;
-	z-index: 2;
-	color: #fff;
-	background-color: #000;
-}
-.barcode-header div{
-	display: inline-block;
-	padding-top: 2px;
-	padding-bottom: 2px;
-}
-.barcode-header>.center{
-	padding-left: 10%;
-	width: 80%;
-}
-.barcode-header>.right{
-	width:9%;
-	text-align: right;
-}
-.barcode a{
+button {
 	display: inline-block;
 	text-align: center;
 	border: 1px solid #ccc;
@@ -73,7 +18,132 @@ body {
 	text-decoration: none;
 	padding: 5px 10px;
 }
-.barcode-mark{
+
+html, body, .barcodeScanner {
+	height: 100%;
+	width: 100%;
+}
+
+body {
+	background-color: #fafafa;
+	font-family: sans-serif;
+	color: #1e1e1e;
+	font-size: 14px;
+}
+
+header {
+	position: relative;
+	background-color: #4ea6cc;
+	width: 100%;
+	height: 52px;
+	z-index: 1;
+}
+
+header div {
+	display: inline-block;
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+
+header>.center {
+	padding-left: 10%;
+	width: 80%;
+}
+
+header>.right {
+	width: 9%;
+	text-align: right;
+}
+
+.barcodeScanner {
+	position: absolute;
+	top: 0;
+	overflow: hidden;
+	padding-top: 52px;
+	margin: 0;
+	z-index: -1;
+}
+
+.barcodeScanner::before {
+	content: "";
+	display: block;
+	background: url('barcode-mark.png') no-repeat center;
+	background-size: 36%;
+	background-color: rgba(0, 0, 0, 0.2);
+	height: 100%;
+}
+
+.barcodeScanner video {
+	position: absolute;
+	top: 0;
+	width: 100%;
+	z-index: -2;
+}
+
+iframe {
+	width: 100%;
+	overflow-x: hidden;
+	position: absolute;
+	height: 52px;
+	bottom: 0;
+	background-color: #fafafa;
+}
+
+iframe.open {
+	height: 100%;
+	padding-top: 52px;
+}
+
+/* 
+.barcode-area {
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+
+.barcode-area video {
+	position: fixed;
+	left: 0;
+	top: 0;
+	width: auto;
+	height: auto;
+	min-width: 100%;
+	min-height: 100%;
+	overflow: hidden;
+}
+
+.barcode {
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.2);
+}
+
+.barcode-header {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	z-index: 2;
+	color: #fff;
+	background-color: #000;
+}
+
+
+
+.barcode a {
+	display: inline-block;
+	text-align: center;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	background-color: #f2f2f2;
+	max-width: 12em;
+	color: black;
+	text-decoration: none;
+	padding: 5px 10px;
+}
+
+.barcode-mark {
 	margin: auto;
 	position: fixed;
 	top: 0;
@@ -85,4 +155,4 @@ body {
 	background: url(barcode-mark.png) no-repeat center;
 	background-size: 36%;
 	z-index: 1;
-}
+} */

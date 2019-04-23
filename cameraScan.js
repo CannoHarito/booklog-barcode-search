@@ -1,13 +1,13 @@
-var CameraScan = (function () {
-    var worker = new Worker('zbar-processor.js');
-    var video = document.querySelector("video");
-    var canvas = document.createElement("canvas");
-    var ctx = canvas.getContext("2d");
-    var timerId = null;
-    var imageData = null;
-    var scanFlag = false;
+const CameraScan = (function () {
+    const worker = new Worker('zbar-processor.js');
+    const video = document.querySelector("video");
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    let timerId = null;
+    let imageData = null;
+    let scanFlag = false;
 
-    var scan = function () {
+    const scan = function () {
         if (!scanFlag) {
             if (video.readyState === video.HAVE_ENOUGH_DATA) {
                 canvas.width = Math.ceil(video.videoWidth);
@@ -28,7 +28,7 @@ var CameraScan = (function () {
                 return;
             }
 
-            var constraints = { audio: false, video: { facingMode: "environment" } };
+            const constraints = { audio: false, video: { facingMode: "environment" } };
 
             navigator.mediaDevices.getUserMedia(constraints).then(
                 function (stream) {

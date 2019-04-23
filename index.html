@@ -9,38 +9,64 @@
 </head>
 
 <body>
-    <div class="barcode-area">
-        <video autoplay></video>
-        <div class="barcode">
-            <div class="barcode-header">
-                <div class="center">バーコードを画面の読み取り範囲内に写すとスキャンします</div>
-                <div class="right"><a href="https://github.com/CannoHarito/booklog-barcode-search">github</a></div>
-            </div>
-            <div class="barcode-mark"></div>
+    <header>
+        <div class="center">
+            booklog-barcode-search
+            <button id="startScan" style="display:none">バーコードスキャン</button>
         </div>
+        <div class="right"><a href="https://github.com/CannoHarito/booklog-barcode-search">github</a></div>
+    </header>
+    <div class="barcodeScanner">
+        <video autoplay></video>
     </div>
-    <!-- <ul id="results"></ul> -->
+    <iframe src="https://booklog.jp/" frameborder="0"></iframe>
     <script src="cameraScan.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        let overIframe = false;
+        document.addEventListener('DOMContentLoaded', () => {
             CameraScan.setCallback(callback);
-            CameraScan.startScan();
+            // CameraScan.startScan();
+            document.querySelector('#startScan').addEventListener('click', openScanner);
+            const iframe = document.querySelector('iframe')
+            iframe.addEventListener(
+                'mouseover', () => overIframe = true
+            );
+            iframe.addEventListener(
+                'mouseout', () => overIframe = false
+            );
+            window.addEventListener('blur', () => overIframe && closeScanner());
+            // window.focus();
         });
+        // window.addEventListener('load', () => {
+
+        // });
         // const list = document.querySelector('ul#results');
         function callback(results) {
             CameraScan.stopScan();
+            let restartFlag = true;
             for (let d of results) {
-                if (/^978/.test(d[2])) {
-                    // window.alert("ISBN:" + d[2]);
-                    window.location.href = "http://booklog.jp/blet?s=" + d[2];
-                }
+                if (/^19[12]/.test(d[2])) continue;
+                // window.alert("ISBN:" + d[2]);
+                // window.location.href = "http://booklog.jp/blet?s=" + d[2];
+                restartFlag = false;
+                document.querySelector('iframe').src = "http://booklog.jp/blet?s=" + d[2];
+                closeScanner();
                 // const entry = document.createElement('li');
                 // entry.appendChild(document.createTextNode(d.join(",")));//d[2] + ' (' + d[0] + ')'));
                 // list.appendChild(entry);
+                break;
             }
-            CameraScan.restartScan();
+            if (restartFlag) CameraScan.restartScan();
         }
-
+        const closeScanner = () => {
+            document.querySelector('iframe').className = 'open';
+            document.querySelector('#startScan').style = 'display:inline-block';
+        };
+        const openScanner = () => {
+            document.querySelector('iframe').className = '';
+            document.querySelector('#startScan').style = 'display:none';
+            CameraScan.restartScan();
+        };
     </script>
 </body>
 
