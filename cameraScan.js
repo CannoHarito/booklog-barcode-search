@@ -1,66 +1,92 @@
-const CameraScan = (() => {
-    const worker = new Worker('zbar-processor.js');
-    const video = document.querySelector("video");
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    let timerId = null;
-    let imageData = null;
-    let scanFlag = false;
+import WorkerWrapper from './workerWrapper.js'
+const defaultWorkerURL = 'zbar-processor.js';
+let canvas = null;
+let ctx = null;
 
-    const scan = function () {
-        if (!scanFlag) {
-            if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                canvas.width = Math.ceil(video.videoWidth);
-                canvas.height = Math.ceil(video.videoHeight);
-                ctx.drawImage(video, 0, 0);
-                imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+export default class CameraScan {
+    constructor(
+        video = document.querySelector('video'),
+        workerURL = defaultWorkerURL
+    ) {
+        if (!canvas) {
+            canvas = document.createElement("canvas");
+            ctx = canvas.getContext("2d");
+        }
+        this.video = video;
+        this.scanCallback = (d => {
+            return d;
+        });
+        this.worker = new WorkerWrapper(workerURL);
+        this.scanFlag = false;
+    }
+    scan() {
+        return new Promise((resolve, reject) => {
+            if (this.scanFlag && this.video.readyState === this.video.HAVE_ENOUGH_DATA) {
+                canvas.width = Math.ceil(this.video.videoWidth);
+                canvas.height = Math.ceil(this.video.videoHeight);
+                ctx.drawImage(this.video, 0, 0);
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                worker.postMessage(imageData, [imageData.data.buffer]);
-                imageData = null;
-            }
-        }
+                resolve(imageData);
+            } else reject('scanFlag');
+        }).then((imageData) => {
+            return this.worker.post(imageData, [imageData.data.buffer])
+        }).then((data) => {
+            if (!this.scanFlag) throw ('scanFlag');
+            console.log('Scan:[' + data.join('], ['));
+            if (data.length === 0) return this.scan();
+            return Promise.resolve().then(() => this.scanCallback(data));
+        });
     }
-
-    return {
-        startScan: function () {
+    async startScan() {
+        try {
             if (!navigator.mediaDevices) {
-                alert("p1:カメラを起動できないためご利用いただけません");
-                return;
+                throw ("カメラを起動できないためご利用いただけません:navigator.mediaDevices=" + navigator.mediaDevices);
             }
-
-            const constraints = { audio: false, video: { facingMode: "environment" } };
-
-            navigator.mediaDevices.getUserMedia(constraints).then(
-                function (stream) {
-                    video.srcObject = stream;
-                    video.setAttribute("playsinline", true);
-                    video.play();
-                    timerId = setInterval(scan, 1000);
-                }).catch(function (e) {
-                    if (e.name == "NotAllowedError") {
-                        alert("p2:ブラウザからのカメラアクセスを許可してください");
-                    } else {
-                        alert("p2:カメラを起動できないためご利用いただけません:" + e);
-                    }
-                });
-        },
-        setCallback: function (callback) {
-            worker.onmessage = function (event) {
-                if (!scanFlag) {
-                    if (event.data.length == 0) return;
-                    callback(event.data);
-                }
+            const constraints = { audio: false, video: { facingMode: "environment", frameRate: 10, } };
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            this.video.srcObject = stream;
+            this.video.setAttribute("playsinline", true);
+            await waitVideo(this.video);
+            this.video.play();
+            this.scanFlag = true;
+            return this.scan();
+        }
+        catch (e) {
+            if (e.name == "NotAllowedError") {
+                throw ("ブラウザからのカメラアクセスを許可してください:NotAllowedError");
             }
-        },
-        stopScan: function () {
-            scanFlag = true;
-            clearInterval(timerId);
-            video.pause();
-        },
-        restartScan: function () {
-            video.play();
-            timerId = setInterval(scan, 1000);
-            scanFlag = false;
+            else {
+                throw e;
+            }
         }
     }
-})();
+    stopScan() {
+        this.scanFlag = false;
+        this.video.pause();
+    }
+    restartScan() {
+        this.video.play();
+        this.scanFlag = true;
+        return this.scan();
+    }
+    releaseCamera() {
+        if (this.scanFlag) this.stopScan();
+        if (this.video.srcObject) {
+            this.video.srcObject.getTracks().forEach(
+                (track) => track.stop()
+            );
+            this.video.srcObject = null;
+        }
+    }
+    setCallback(callback) {
+        this.scanCallback = callback;
+    }
+}
+
+const waitVideo = (video = document.querySelector('video')) => {
+    return new Promise((resolve) => {
+        if (video.readyState === video.HAVE_ENOUGH_DATA) return resolve(video.readyState);
+        video.addEventListener('canplay', (e) => resolve(e.target.readyState));
+    });
+};
