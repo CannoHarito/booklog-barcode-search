@@ -1,4 +1,4 @@
-const CameraScan = (function () {
+const CameraScan = (() => {
     const worker = new Worker('zbar-processor.js');
     const video = document.querySelector("video");
     const canvas = document.createElement("canvas");
